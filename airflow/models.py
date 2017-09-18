@@ -1547,6 +1547,13 @@ class TaskInstance(Base):
             def __repr__(self):
                 return str(self.var)
 
+        if next_execution_date:
+            run_date = next_execution_date
+        else:
+            run_date = self.execution_date
+        run_date_ds = run_date.isoformat()[:10]
+        run_date_ds_nodash = run_date_ds.replace('-', '')
+
         return {
             'dag': task.dag,
             'ds': ds,
@@ -1577,7 +1584,10 @@ class TaskInstance(Base):
             'var': {
                 'value': VariableAccessor(),
                 'json': VariableJsonAccessor()
-            }
+            },
+            'run_ds': run_date_ds,
+            'run_ds_nodash': run_date_ds_nodash,
+            'run_date': run_date
         }
 
     def render_templates(self):
