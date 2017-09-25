@@ -4288,11 +4288,18 @@ class DagRun(Base):
 
         # check for removed tasks
         task_ids = []
+        has_removed = False
         for ti in tis:
             task_ids.append(ti.task_id)
             try:
                 dag.get_task(ti.task_id)
             except AirflowException:
+                logging.warn('Unable to find task instance {} in DAG {}'.format(ti.task_id,
+                                                                                dag.dag_id))
+                if not has_removed:
+                    logging.warn('DAG {}, run state {}, all DAG tasks: '.format(dag.dag_id,
+                                 self.state) + ','.join(dag.task_ids))
+                    has_removed = True
                 if self.state is not State.RUNNING and not dag.partial:
                     ti.state = State.REMOVED
 
