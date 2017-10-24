@@ -1551,7 +1551,8 @@ class TaskInstance(Base):
             run_date = next_execution_date
         else:
             run_date = self.execution_date
-        run_date_ds = run_date.isoformat()[:10]
+        run_date_ts = run_date.isoformat()
+        run_date_ds = run_date_ts[:10]
         run_date_ds_nodash = run_date_ds.replace('-', '')
 
         return {
@@ -1587,6 +1588,7 @@ class TaskInstance(Base):
             },
             'run_ds': run_date_ds,
             'run_ds_nodash': run_date_ds_nodash,
+            'run_ts': run_date_ts,
             'run_date': run_date
         }
 
