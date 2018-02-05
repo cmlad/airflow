@@ -32,12 +32,14 @@ from airflow.logging_config import configure_logging
 from airflow import jobs
 from airflow import settings
 from airflow import configuration
+from werkzeug.contrib.fixers import ProxyFix
 
 csrf = CSRFProtect()
 
 
 def create_app(config=None, testing=False):
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app)
     app.secret_key = configuration.get('webserver', 'SECRET_KEY')
     app.config['LOGIN_DISABLED'] = not configuration.getboolean('webserver', 'AUTHENTICATE')
 
@@ -94,8 +96,6 @@ def create_app(config=None, testing=False):
             name='Configuration', category="Admin"))
         av(vs.UserModelView(
             models.User, Session, name="Users", category="Admin"))
-        av(vs.ConnectionModelView(
-            models.Connection, Session, name="Connections", category="Admin"))
         av(vs.VariableView(
             models.Variable, Session, name="Variables", category="Admin"))
         av(vs.XComView(

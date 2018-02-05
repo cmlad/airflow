@@ -35,7 +35,6 @@ api_experimental = Blueprint('api_experimental', __name__)
 
 
 @csrf.exempt
-@api_experimental.route('/dags/<string:dag_id>/dag_runs', methods=['POST'])
 @requires_authentication
 def trigger_dag(dag_id):
     """
