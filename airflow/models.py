@@ -2511,7 +2511,8 @@ class BaseOperator(LoggingMixin):
 
         for k, v in list(self.__dict__.items()):
             if k not in ('user_defined_macros', 'user_defined_filters',
-                         'params', '_log'):
+                         'params', '_log', '_upstream_task_ids',
+                         '_downstream_task_ids', '_dag'):
                 setattr(result, k, copy.deepcopy(v, memo))
         result.params = self.params
         if hasattr(self, 'user_defined_macros'):
@@ -2520,6 +2521,8 @@ class BaseOperator(LoggingMixin):
             result.user_defined_filters = self.user_defined_filters
         if hasattr(self, '_log'):
             result._log = self._log
+        result._upstream_task_ids = []
+        result._downstream_task_ids = []
         return result
 
     def __getstate__(self):
