@@ -2585,7 +2585,7 @@ class DagRunModelView(ModelViewOnly):
                 "{count} dag runs were set to '{target_state}'".format(**locals()))
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to set state', 'error')
 
 
@@ -2692,7 +2692,7 @@ class TaskInstanceModelView(ModelViewOnly):
 
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to clear task instances', 'error')
 
     @provide_session
@@ -2713,7 +2713,7 @@ class TaskInstanceModelView(ModelViewOnly):
                 "{count} task instances were set to '{target_state}'".format(**locals()))
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to set state', 'error')
 
     def get_one(self, id):
