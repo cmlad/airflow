@@ -18,6 +18,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# Monkey patch here because airflow.settings imports a ton of stuff and results
+# in deadlocks
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import setproctitle
 from airflow import settings
 
