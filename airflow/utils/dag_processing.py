@@ -482,12 +482,12 @@ class DagFileProcessorAgent(LoggingMixin):
             # Because this process may need custom configurations that cannot be shared,
             # e.g. RotatingFileHandler. And it can cause connection corruption if we
             # do not recreate the SQLA connection pool.
-            os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER'] = 'True'
+            # os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER'] = 'True'
             # Replicating the behavior of how logging module was loaded
             # in logging_config.py
             reload_module(import_module(logging_class_path.rsplit('.', 1)[0]))
             reload_module(airflow.settings)
-            del os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER']
+            # del os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER']
             processor_manager = DagFileProcessorManager(dag_directory,
                                                         file_paths,
                                                         max_runs,
