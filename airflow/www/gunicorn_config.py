@@ -20,14 +20,10 @@
 
 # Monkey patch here because airflow.settings imports a ton of stuff and results
 # in deadlocks
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import setproctitle
-from airflow import settings
 
 
 def post_worker_init(dummy_worker):
     setproctitle.setproctitle(
-        settings.GUNICORN_WORKER_READY_PREFIX + setproctitle.getproctitle()
+        "[ready] " + setproctitle.getproctitle()
     )
