@@ -112,8 +112,6 @@ def create_app(config=None, testing=False):
             name='Configuration', category="Admin"))
         av(vs.UserModelView(
             models.User, Session, name="Users", category="Admin"))
-        av(vs.ConnectionModelView(
-            Connection, Session, name="Connections", category="Admin"))
         av(vs.VariableView(
             models.Variable, Session, name="Variables", category="Admin"))
         av(vs.XComView(

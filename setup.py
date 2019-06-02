@@ -19,6 +19,7 @@
 
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
+from setuptools.command.build_py import build_py
 
 import imp
 import io
@@ -86,8 +87,12 @@ class CompileAssets(Command):
         pass
 
     def run(self):
-        subprocess.call('./airflow/www_rbac/compile_assets.sh')
+        subprocess.check_call('./airflow/www_rbac/compile_assets.sh')
 
+class CompileAssetsOnBuild(build_py):
+    def run(self):
+        self.run_command('compile_assets')
+        build_py.run(self)
 
 def git_version(version):
     """
@@ -141,7 +146,7 @@ azure_cosmos = ['azure-cosmos>=3.0.1']
 azure_container_instances = ['azure-mgmt-containerinstance']
 cassandra = ['cassandra-driver>=3.13.0']
 celery = [
-    'celery>=4.1.1, <4.2.0',
+    'celery~=4.3',
     'flower>=0.7.3, <1.0',
     'tornado>=4.2.0, <6.0',  # Dep of flower. Pin to a version that works on Py3.5.2
 ]
@@ -410,7 +415,8 @@ def do_setup():
         cmdclass={
             'test': Tox,
             'extra_clean': CleanCommand,
-            'compile_assets': CompileAssets
+            'compile_assets': CompileAssets,
+            'build_py': CompileAssetsOnBuild,
         },
         python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
     )

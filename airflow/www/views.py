@@ -2702,7 +2702,7 @@ class DagRunModelView(ModelViewOnly):
                 "{count} dag runs were set to running".format(**locals()))
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to set state', 'error')
 
     @action('set_failed', "Set state to 'failed'",
@@ -2728,7 +2728,7 @@ class DagRunModelView(ModelViewOnly):
                 "were set to failed".format(**locals()))
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to set state', 'error')
 
     @action('set_success', "Set state to 'success'",
@@ -2754,7 +2754,7 @@ class DagRunModelView(ModelViewOnly):
                 "were set to success".format(**locals()))
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to set state', 'error')
 
     # Called after editing DagRun model in the UI.
@@ -2889,7 +2889,7 @@ class TaskInstanceModelView(ModelViewOnly):
 
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to clear task instances', 'error')
 
     @provide_session
@@ -2910,7 +2910,7 @@ class TaskInstanceModelView(ModelViewOnly):
                 "{count} task instances were set to '{target_state}'".format(**locals()))
         except Exception as ex:
             if not self.handle_view_exception(ex):
-                raise Exception("Ooops")
+                raise
             flash('Failed to set state', 'error')
 
     def get_one(self, id):
