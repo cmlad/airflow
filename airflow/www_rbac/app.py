@@ -100,7 +100,8 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
             app,
             db.session if not session else session,
             security_manager_class=security_manager_class,
-            base_template='appbuilder/baselayout.html')
+            base_template='appbuilder/baselayout.html',
+            static_folder=app.root_path + '/static/appbuilder_fixed')
 
         def init_views(appbuilder):
             from airflow.www_rbac import views
@@ -128,9 +129,6 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
                                 href='/configuration',
                                 category="Admin",
                                 category_icon="fa-user")
-            appbuilder.add_view(views.ConnectionModelView,
-                                "Connections",
-                                category="Admin")
             appbuilder.add_view(views.PoolModelView,
                                 "Pools",
                                 category="Admin")
@@ -175,6 +173,57 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
             # Otherwise, when the name of a view or menu is changed, the framework
             # will add the new Views and Menus names to the backend, but will not
             # delete the old ones.
+
+            # Override the built-in get_oauth_user_info function to improve it in 3 ways:
+            # - Add the /api/v3 prefix that is always needed to the user path
+            # - Use email instead of username for matching to user accounts. Email is more
+            #   canonical
+            # - Limit access to members of specific Github groups
+            @appbuilder.sm.oauth_user_info_getter
+            def get_oauth_user_info(sm, provider, response=None):
+                me = sm.appbuilder.sm.oauth_remotes[provider].get('/api/v3/user')
+
+                email = me.data.get('email')
+                name = me.data.get('name')
+                if ' ' in name:
+                    first_name, last_name = name.split(' ', 1)
+                else:
+                    first_name = name
+                    last_name = ''
+
+                user_data = {
+                    'username': email,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email
+                }
+
+                import os
+                allowed_teams = os.getenv("GITHUB_AUTH_TEAMS")
+                if not allowed_teams:
+                    return user_data
+
+                allowed_teams = [int(team.strip()) for team in allowed_teams.split(',')]
+
+                resp = sm.appbuilder.sm.oauth_remotes[provider].get('/api/v3/user/teams')
+                if not resp or resp.status != 200:
+                    raise Exception('Bad response from GHE ({0})'.format(resp.status if resp else 'None'))
+
+                for team in resp.data:
+                    # mylons: previously this line used to be if team['slug'] in teams
+                    # however, teams are part of organizations. organizations are unique,
+                    # but teams are not therefore 'slug' for a team is not necessarily unique.
+                    # use id instead
+                    if team['id'] in allowed_teams:
+                        return user_data
+
+                log.debug(
+                    'Denying access for user "%s", not a member of "%s"',
+                    email,
+                    str(allowed_teams)
+                )
+
+                return {'email': 'unauthorized'}
 
         def init_plugin_blueprints(app):
             from airflow.plugins_manager import flask_blueprints

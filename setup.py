@@ -20,6 +20,7 @@
 
 
 from setuptools import setup, find_packages, Command
+from setuptools.command.build_py import build_py
 
 import imp
 import io
@@ -93,8 +94,12 @@ class CompileAssets(Command):
 
     # noinspection PyMethodMayBeStatic
     def run(self):
-        subprocess.call('./airflow/www_rbac/compile_assets.sh')
+        subprocess.check_call('./airflow/www_rbac/compile_assets.sh')
 
+class CompileAssetsOnBuild(build_py):
+    def run(self):
+        self.run_command('compile_assets')
+        build_py.run(self)
 
 def git_version(version_):
     """
@@ -454,7 +459,8 @@ def do_setup():
             'https://dist.apache.org/repos/dist/release/airflow/' + version),
         cmdclass={
             'extra_clean': CleanCommand,
-            'compile_assets': CompileAssets
+            'compile_assets': CompileAssets,
+            'build_py': CompileAssetsOnBuild,
         },
         test_suite='setup.airflow_test_suite',
         python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',

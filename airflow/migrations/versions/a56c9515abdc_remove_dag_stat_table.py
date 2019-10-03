@@ -19,7 +19,7 @@
 """Remove dag_stat table
 
 Revision ID: a56c9515abdc
-Revises: c8ffec048a3b
+Revises: 939bb1e647c8
 Create Date: 2018-12-27 10:27:59.715872
 
 """
@@ -29,7 +29,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'a56c9515abdc'
-down_revision = 'c8ffec048a3b'
+down_revision = '939bb1e647c8'
 branch_labels = None
 depends_on = None
 
