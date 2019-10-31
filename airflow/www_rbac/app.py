@@ -181,21 +181,21 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
             # - Limit access to members of specific Github groups
             @appbuilder.sm.oauth_user_info_getter
             def get_oauth_user_info(sm, provider, response=None):
-                me = sm.appbuilder.sm.oauth_remotes[provider].get('/api/v3/user')
+                me = sm.appbuilder.sm.oauth_remotes[provider].get("/api/v3/user")
 
-                email = me.data.get('email')
-                name = me.data.get('name')
+                email = me.data.get("email")
+                name = me.data.get("name")
                 if ' ' in name:
                     first_name, last_name = name.split(' ', 1)
                 else:
                     first_name = name
-                    last_name = ''
+                    last_name = ""
 
                 user_data = {
-                    'username': email,
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'email': email
+                    "username": email,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": email
                 }
 
                 import os
@@ -203,18 +203,31 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
                 if not allowed_teams:
                     return user_data
 
-                allowed_teams = [int(team.strip()) for team in allowed_teams.split(',')]
+                allowed_teams = [int(team.strip()) for team in allowed_teams.split(",")]
 
-                resp = sm.appbuilder.sm.oauth_remotes[provider].get('/api/v3/user/teams')
-                if not resp or resp.status != 200:
-                    raise Exception('Bad response from GHE ({0})'.format(resp.status if resp else 'None'))
+                # Get user teams from Github, taking care of pagination
+                teams = []
+                page = 1
+                while True:
+                    resp = sm.appbuilder.sm.oauth_remotes[provider].get(
+                        f"/api/v3/user/teams?page={page}&per_page=100"
+                    )
+                    if not resp or resp.status != 200:
+                        raise Exception(
+                            "Bad response from GHE ({})".format(resp.status if resp else "None")
+                        )
 
-                for team in resp.data:
-                    # mylons: previously this line used to be if team['slug'] in teams
-                    # however, teams are part of organizations. organizations are unique,
-                    # but teams are not therefore 'slug' for a team is not necessarily unique.
-                    # use id instead
-                    if team['id'] in allowed_teams:
+                    teams.extend(resp.data)
+
+                    # Abort if there are no more pages (by looking at the Link header)
+                    link_header = resp._resp.info().get("Link")
+                    if not link_header or 'rel="next"' not in link_header:
+                        break
+
+                    page += 1
+
+                for team in teams:
+                    if team["id"] in allowed_teams:
                         return user_data
 
                 log.debug(
@@ -223,7 +236,7 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
                     str(allowed_teams)
                 )
 
-                return {'email': 'unauthorized'}
+                return {"email": "unauthorized"}
 
         def init_plugin_blueprints(app):
             from airflow.plugins_manager import flask_blueprints
