@@ -1347,6 +1347,15 @@ class TaskInstance(Base, LoggingMixin):
             ):
                 return Variable.get(item, default_var=default_var, deserialize_json=True)
 
+        if next_execution_date:
+            run_date = next_execution_date
+        else:
+            run_date = self.execution_date
+
+        run_date_ts = run_date.isoformat()
+        run_date_ds = run_date_ts[:10]
+        run_date_ds_nodash = run_date_ds.replace('-', '')
+
         return {
             'conf': conf,
             'dag': task.dag,
@@ -1388,6 +1397,10 @@ class TaskInstance(Base, LoggingMixin):
             },
             'inlets': task.inlets,
             'outlets': task.outlets,
+            'run_ds': run_date_ds,
+            'run_ds_nodash': run_date_ds_nodash,
+            'run_ts': run_date_ts,
+            'run_date': run_date,
         }
 
     def get_rendered_template_fields(self):

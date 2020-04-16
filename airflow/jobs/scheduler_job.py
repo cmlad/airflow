@@ -130,17 +130,9 @@ class DagFileProcessor(AbstractDagFileProcessor, LoggingMixin):
         # This helper runs in the newly created process
         log = logging.getLogger("airflow.processor")
 
-        stdout = StreamLogWriter(log, logging.INFO)
-        stderr = StreamLogWriter(log, logging.WARN)
-
-        set_context(log, file_path)
         setproctitle("airflow scheduler - DagFileProcessor {}".format(file_path))
 
         try:
-            # redirect stdout/stderr to log
-            sys.stdout = stdout
-            sys.stderr = stderr
-
             # Re-configure the ORM engine as there are issues with multiple processes
             settings.configure_orm()
 
@@ -167,8 +159,6 @@ class DagFileProcessor(AbstractDagFileProcessor, LoggingMixin):
             raise
         finally:
             result_channel.close()
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
             # We re-initialized the ORM within this Process above so we need to
             # tear it down manually here
             settings.dispose_orm()
